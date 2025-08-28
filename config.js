@@ -3,7 +3,15 @@
  */
 
 const fs = require('fs');
-const chalk = require('chalk');
+// Use a simple color function instead of chalk to avoid ESM issues
+const colors = {
+    green: (text) => `\x1b[32m${text}\x1b[0m`,
+    red: (text) => `\x1b[31m${text}\x1b[0m`,
+    yellow: (text) => `\x1b[33m${text}\x1b[0m`,
+    blue: (text) => `\x1b[34m${text}\x1b[0m`,
+    redBright: (text) => `\x1b[91m${text}\x1b[0m`,
+    keyword: (color) => (text) => text
+};
 
 // Owner configuration
 global.owner = process.env.OWNER_NUMBERS ? process.env.OWNER_NUMBERS.split(',') : ['6287820032793', '6288744328279'];
@@ -56,14 +64,14 @@ global.timezone = process.env.TZ || 'Asia/Jakarta';
 
 // Console colors
 global.log = (text, color) => {
-    return !color ? chalk.green(text) : chalk.keyword(color)(text);
+    return !color ? colors.green(text) : colors.keyword(color)(text);
 };
 
 // File watch for hot reload
 let file = require.resolve(__filename);
 fs.watchFile(file, () => {
     fs.unwatchFile(file);
-    console.log(chalk.redBright("Update 'config.js'"));
+    console.log(colors.redBright("Update 'config.js'"));
     delete require.cache[file];
     require(file);
 });
