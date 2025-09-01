@@ -105,7 +105,15 @@ _Bot by RIKASHIKI_
                 break;
                 
             case 'owner':
-                sock.sendContact(m.chat, global.owner, m);
+                // Baileys v6+ compatible contact message
+                const contacts = Array.isArray(global.owner) ? global.owner : [global.owner];
+                const vcard = contacts.map(num => `BEGIN:VCARD\nVERSION:3.0\nFN:${global.ownername || 'Owner'}\nTEL;type=CELL;type=VOICE;waid=${num}:${num}\nEND:VCARD`).join('\n');
+                await sock.sendMessage(m.chat, {
+                    contacts: {
+                        displayName: global.ownername || 'Owner',
+                        contacts: contacts.map(num => ({ vcard }))
+                    }
+                }, { quoted: m });
                 break;
                 
             case 'public':

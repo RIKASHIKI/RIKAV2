@@ -6,7 +6,8 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-function start(file) {
+async function start(file) {
+    const { default: yargs } = await import('yargs');
     let args = [path.join(__dirname, file), ...process.argv.slice(2)];
     console.log([process.argv[0], ...args].join(' '));
     
@@ -39,7 +40,9 @@ function start(file) {
         });
 }
 
-const yargs = require('yargs/yargs');
 const rl = require('readline').createInterface(process.stdin, process.stdout);
 
-start('RIKASHIKI.js');
+
+(async () => {
+    await start('RIKASHIKI.js');
+})();
