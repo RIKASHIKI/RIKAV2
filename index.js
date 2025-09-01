@@ -43,6 +43,23 @@ async function start(file) {
 const rl = require('readline').createInterface(process.stdin, process.stdout);
 
 
+
+// Watcher untuk notifikasi penambahan baris kode
+const fs = require('fs');
+const filesToWatch = [path.join(__dirname, 'RIKASHIKI.js'), path.join(__dirname, 'index.js')];
+let lastLineCounts = {};
+
+filesToWatch.forEach(file => {
+    lastLineCounts[file] = fs.readFileSync(file, 'utf-8').split('\n').length;
+    fs.watchFile(file, { interval: 1000 }, (curr, prev) => {
+        const lines = fs.readFileSync(file, 'utf-8').split('\n').length;
+        if (lines > lastLineCounts[file]) {
+            console.log(`📢 File ${path.basename(file)} bertambah ${lines - lastLineCounts[file]} baris kode!`);
+        }
+        lastLineCounts[file] = lines;
+    });
+});
+
 (async () => {
     await start('RIKASHIKI.js');
 })();

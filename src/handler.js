@@ -8,6 +8,7 @@ const { fetchJson, isGroupMuted, setGroupMute } = require('../lib/myfunc');
 
 module.exports = async (sock, m, chatUpdate, store) => {
     try {
+        const { addUser, addGroup } = require('../lib/myfunc');
         const body = (m.mtype === 'conversation') ? m.message.conversation : 
                      (m.mtype === 'imageMessage') ? m.message.imageMessage.caption : 
                      (m.mtype === 'videoMessage') ? m.message.videoMessage.caption : 
@@ -16,7 +17,7 @@ module.exports = async (sock, m, chatUpdate, store) => {
                      (m.mtype === 'listResponseMessage') ? m.message.listResponseMessage.singleSelectReply.selectedRowId : 
                      (m.mtype === 'templateButtonReplyMessage') ? m.message.templateButtonReplyMessage.selectedId : 
                      (m.mtype === 'messageContextInfo') ? (m.message.buttonsResponseMessage?.selectedButtonId || m.message.listResponseMessage?.singleSelectReply.selectedRowId || m.text) : '';
-        
+
         const budy = (typeof m.text == 'string' ? m.text : '');
         const prefix = prefa ? /^[°•π÷×¶∆£¢€¥®™+✓_=|~!?@#$%^&.©^]/gi.test(body) ? body.match(/^[°•π÷×¶∆£¢€¥®™+✓_=|~!?@#$%^&.©^]/gi)[0] : "" : prefa ?? global.prefix;
         const isCmd = body.startsWith(prefix);
@@ -25,6 +26,10 @@ module.exports = async (sock, m, chatUpdate, store) => {
         const pushname = m.pushName || "No Name";
         const isGroup = m.chat.endsWith('@g.us');
         const sender = m.sender;
+
+        // Simpan user dan grup ke database
+        addUser(sender);
+        if (isGroup) addGroup(m.chat);
         const text = q = args.join(" ");
         const quoted = m.quoted ? m.quoted : m;
         const mime = (quoted.msg || quoted).mimetype || '';

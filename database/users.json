@@ -1,3 +1,54 @@
 {
-  "users": []
+  "users": [
+    {
+      "id": {
+        "server": "s.whatsapp.net",
+        "user": "6287820032793",
+        "domainType": 0
+      }
+    },
+    {
+      "id": {
+        "server": "s.whatsapp.net",
+        "user": "62882020038817",
+        "domainType": 0,
+        "device": 11
+      }
+    },
+    {
+      "id": {
+        "server": "s.whatsapp.net",
+        "user": "6287820032793",
+        "domainType": 0
+      }
+    },
+    {
+      "id": {
+        "server": "s.whatsapp.net",
+        "user": "6287820032793",
+        "domainType": 0
+      }
+    },
+    {
+      "id": {
+        "server": "s.whatsapp.net",
+        "user": "6287820032793",
+        "domainType": 0
+      }
+    },
+    {
+      "id": {
+        "server": "lid",
+        "user": "165511044272372",
+        "domainType": 1
+      }
+    },
+    {
+      "id": {
+        "server": "s.whatsapp.net",
+        "user": "6287820032793",
+        "domainType": 0
+      }
+    }
+  ]
 }
