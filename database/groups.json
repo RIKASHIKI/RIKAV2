@@ -1,0 +1,12 @@
+{
+  "groups": [
+    {
+      "id": "group_a_id",
+      "mute": true
+    },
+    {
+      "id": "group_b_id",
+      "mute": false
+    }
+  ]
+}

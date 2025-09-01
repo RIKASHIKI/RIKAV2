@@ -4,7 +4,7 @@
 
 const { color } = require('../lib/color');
 const moment = require('moment-timezone');
-const { fetchJson } = require('../lib/myfunc');
+const { fetchJson, isGroupMuted, setGroupMute } = require('../lib/myfunc');
 
 module.exports = async (sock, m, chatUpdate, store) => {
     try {
@@ -94,47 +94,22 @@ _Bot by RIKASHIKI_
                 m.reply(menuText);
                 break;
                 
+            // Main commands moved to features/commands.js
             case 'ping':
-                const timestamp = speed();
-                const latensi = speed() - timestamp;
-                m.reply(`*Pong!*\n\n🏓 Speed: ${latensi.toFixed(4)} _Second_`);
-                break;
-                
             case 'runtime':
-                m.reply(`*Runtime:* ${runtime(process.uptime())}`);
-                break;
-                
             case 'owner':
-                // Baileys v6+ compatible contact message
-                const contacts = Array.isArray(global.owner) ? global.owner : [global.owner];
-                const vcard = contacts.map(num => `BEGIN:VCARD\nVERSION:3.0\nFN:${global.ownername || 'Owner'}\nTEL;type=CELL;type=VOICE;waid=${num}:${num}\nEND:VCARD`).join('\n');
-                await sock.sendMessage(m.chat, {
-                    contacts: {
-                        displayName: global.ownername || 'Owner',
-                        contacts: contacts.map(num => ({ vcard }))
-                    }
-                }, { quoted: m });
-                break;
-                
             case 'public':
-                if (!isCreator) return m.reply('Only for owner!');
-                sock.public = true;
-                m.reply('Successfully changed to public mode');
-                break;
-                
             case 'self':
-                if (!isCreator) return m.reply('Only for owner!');
-                sock.public = false;
-                m.reply('Successfully changed to self mode');
+                const commandsHandler = require('../features/commands');
+                await commandsHandler(sock, m, command, { isCreator, runtime, speed });
                 break;
                 
             default:
                 if (isCmd && budy.toLowerCase() != undefined) {
                     if (m.chat.endsWith('broadcast')) return;
                     if (m.isBaileys) return;
-                    let msgs = global.db.database
-                    if (!(command in msgs)) return m.reply(`Command *${prefix + command}* not found!`);
-                    msgs[command]
+                    // Log unknown commands instead of replying or erroring
+                    console.log(`[CMD] Unknown command: ${prefix + command} from ${pushname} in ${isGroup ? 'Group' : 'Private Chat'}`);
                 }
         }
         
