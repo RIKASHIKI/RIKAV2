@@ -39,7 +39,7 @@ const PORT = process.env.PORT || 8082;
 
 let qrString = '';
 let retryCount = 0;
-const maxRetries = 5;
+const maxRetries = 3;
 
 app.get('/', (req, res) => {
     if (qrString) {
@@ -118,17 +118,32 @@ async function startRika() {
 
     sock.ev.on('messages.upsert', async chatUpdate => {
         try {
+            console.log('📥 Message received, processing...');
             const mek = chatUpdate.messages[0];
-            if (!mek.message) return;
-            mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message;
-            if (mek.key && mek.key.remoteJid === 'status@broadcast') return;
-            if (!sock.public && !mek.key.fromMe && chatUpdate.type === 'notify') return;
-            if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return;
+            if (!mek.message) {
+                console.log('❌ No message content found');
+                return;
+            }
             
+            mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message;
+            if (mek.key && mek.key.remoteJid === 'status@broadcast') {
+                console.log('⏭️ Skipping status broadcast');
+                return;
+            }
+            
+            // Set bot to public mode for now to receive all messages
+            sock.public = true;
+            
+            if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) {
+                console.log('⏭️ Skipping Baileys message');
+                return;
+            }
+            
+            console.log('✅ Processing message from:', mek.key.remoteJid);
             const m = smsg(sock, mek, store);
             require('./src/handler')(sock, m, chatUpdate, store);
         } catch (err) {
-            console.log(err);
+            console.log('❌ Error processing message:', err);
         }
     });
 
@@ -183,8 +198,10 @@ async function startRika() {
             }
         } else if (connection === 'open') {
             qrString = '';
-            console.log('WhatsApp connection opened successfully!');
-            console.log('Bot is now ready to receive messages');
+            retryCount = 0; // Reset retry count on successful connection
+            console.log('✅ WhatsApp connection opened successfully!');
+            console.log('🤖 Bot is now ready to receive messages');
+            console.log('📱 Send a message to test the bot connection');
         }
     });
 

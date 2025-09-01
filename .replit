@@ -23,7 +23,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node index.js"
+args = "node RIKASHIKI.js"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
