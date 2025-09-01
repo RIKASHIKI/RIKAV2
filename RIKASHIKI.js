@@ -38,6 +38,8 @@ const app = express();
 const PORT = process.env.PORT || 8082;
 
 let qrString = '';
+let retryCount = 0;
+const maxRetries = 5;
 
 app.get('/', (req, res) => {
     if (qrString) {
@@ -141,10 +143,43 @@ async function startRika() {
         }
         
         if (connection === 'close') {
-            const shouldReconnect = (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut;
-            console.log('Connection closed due to ', lastDisconnect?.error, ', reconnecting ', shouldReconnect);
-            if (shouldReconnect) {
-                startRika();
+            const statusCode = (lastDisconnect?.error)?.output?.statusCode;
+            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+            
+            console.log('Connection closed due to ', lastDisconnect?.error?.message || 'Unknown error');
+            
+            // Handle specific disconnect reasons
+            if (statusCode === DisconnectReason.connectionClosed) {
+                console.log('Connection was closed, reconnecting...');
+            } else if (statusCode === DisconnectReason.connectionLost) {
+                console.log('Connection was lost, reconnecting...');
+            } else if (statusCode === DisconnectReason.restartRequired) {
+                console.log('Restart required, restarting...');
+            } else if (statusCode === 440) { // Stream conflict
+                retryCount++;
+                console.log('Stream conflict detected - another device may be connected');
+                console.log(`Retry attempt: ${retryCount}/${maxRetries}`);
+                
+                if (retryCount >= maxRetries) {
+                    console.log('❌ Maximum retry attempts reached!');
+                    console.log('📱 SOLUTION: Please check your WhatsApp and disconnect other linked devices:');
+                    console.log('   1. Open WhatsApp on your phone');
+                    console.log('   2. Go to Settings > Linked Devices');
+                    console.log('   3. Disconnect all other devices');
+                    console.log('   4. Restart this bot to get a new QR code');
+                    console.log('⏸️  Bot stopped to prevent infinite loops.');
+                    return; // Stop trying to reconnect
+                }
+                
+                console.log('Clearing session and waiting before reconnect...');
+                qrString = '';
+                await sleep(15000); // Wait 15 seconds before reconnecting
+            }
+            
+            if (shouldReconnect && retryCount < maxRetries) {
+                const delay = statusCode === 440 ? 15000 : 3000; // Longer delay for conflicts
+                console.log(`Reconnecting in ${delay/1000} seconds...`);
+                setTimeout(() => startRika(), delay);
             }
         } else if (connection === 'open') {
             qrString = '';

@@ -7,7 +7,11 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prestart": "npm install",
+    "start": "pm2 start index.js --name rika && pm2 save",
+    "stop": "pm2 stop rika",
+    "restart": "pm2 restart rika",
+    "delete": "pm2 delete rika"
   },
   "keywords": [],
   "author": "",
